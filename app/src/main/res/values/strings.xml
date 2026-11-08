@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Anti-Snatch</string>
+    <string name="decoy_guard_desc">Keeps the fake update screen locked if your phone is snatched. It only acts while that screen is showing.</string>
+</resources>

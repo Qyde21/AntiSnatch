@@ -1,0 +1,333 @@
+.class public final Landroidx/compose/ui/hapticfeedback/PlatformHapticFeedback;
+.super Ljava/lang/Object;
+.source "PlatformHapticFeedback.android.kt"
+
+# interfaces
+.implements Landroidx/compose/ui/hapticfeedback/HapticFeedback;
+
+
+# annotations
+.annotation runtime Lkotlin/Metadata;
+    d1 = {
+        "\u0000 \n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0000\n\u0002\u0018\u0002\n\u0002\u0008\u0003\n\u0002\u0010\u0002\n\u0000\n\u0002\u0018\u0002\n\u0002\u0008\u0003\u0008\u0001\u0018\u00002\u00020\u0001B\u000f\u0012\u0006\u0010\u0002\u001a\u00020\u0003\u00a2\u0006\u0004\u0008\u0004\u0010\u0005J\u0017\u0010\u0006\u001a\u00020\u00072\u0006\u0010\u0008\u001a\u00020\tH\u0016\u00a2\u0006\u0004\u0008\n\u0010\u000bR\u000e\u0010\u0002\u001a\u00020\u0003X\u0082\u0004\u00a2\u0006\u0002\n\u0000\u00a8\u0006\u000c"
+    }
+    d2 = {
+        "Landroidx/compose/ui/hapticfeedback/PlatformHapticFeedback;",
+        "Landroidx/compose/ui/hapticfeedback/HapticFeedback;",
+        "view",
+        "Landroid/view/View;",
+        "<init>",
+        "(Landroid/view/View;)V",
+        "performHapticFeedback",
+        "",
+        "hapticFeedbackType",
+        "Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;",
+        "performHapticFeedback-CdsT49E",
+        "(I)V",
+        "ui"
+    }
+    k = 0x1
+    mv = {
+        0x2,
+        0x0,
+        0x0
+    }
+    xi = 0x30
+.end annotation
+
+
+# static fields
+.field public static final $stable:I
+
+
+# instance fields
+.field private final view:Landroid/view/View;
+
+
+# direct methods
+.method static constructor <clinit>()V
+    .registers 1
+
+    const/16 v0, 0x8
+
+    sput v0, Landroidx/compose/ui/hapticfeedback/PlatformHapticFeedback;->$stable:I
+
+    return-void
+.end method
+
+.method public constructor <init>(Landroid/view/View;)V
+    .registers 2
+    .param p1, "view"    # Landroid/view/View;
+
+    .line 24
+    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+
+    iput-object p1, p0, Landroidx/compose/ui/hapticfeedback/PlatformHapticFeedback;->view:Landroid/view/View;
+
+    return-void
+.end method
+
+
+# virtual methods
+.method public performHapticFeedback-CdsT49E(I)V
+    .registers 4
+    .param p1, "$v$c$androidx-compose-ui-hapticfeedback-HapticFeedbackType$-hapticFeedbackType$0"    # I
+
+    .line 28
+    nop
+
+    .line 29
+    sget-object v0, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->Companion:Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;
+
+    invoke-virtual {v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;->getConfirm-5zf0vsI()I
+
+    move-result v0
+
+    invoke-static {p1, v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->equals-impl0(II)Z
+
+    move-result v0
+
+    if-eqz v0, :cond_11
+
+    const/16 v0, 0x10
+
+    goto/16 :goto_c7
+
+    .line 30
+    :cond_11
+    sget-object v0, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->Companion:Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;
+
+    invoke-virtual {v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;->getContextClick-5zf0vsI()I
+
+    move-result v0
+
+    invoke-static {p1, v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->equals-impl0(II)Z
+
+    move-result v0
+
+    if-eqz v0, :cond_20
+
+    const/4 v0, 0x6
+
+    goto/16 :goto_c7
+
+    .line 31
+    :cond_20
+    sget-object v0, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->Companion:Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;
+
+    invoke-virtual {v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;->getGestureEnd-5zf0vsI()I
+
+    move-result v0
+
+    invoke-static {p1, v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->equals-impl0(II)Z
+
+    move-result v0
+
+    if-eqz v0, :cond_30
+
+    const/16 v0, 0xd
+
+    goto/16 :goto_c7
+
+    .line 32
+    :cond_30
+    sget-object v0, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->Companion:Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;
+
+    invoke-virtual {v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;->getGestureThresholdActivate-5zf0vsI()I
+
+    move-result v0
+
+    invoke-static {p1, v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->equals-impl0(II)Z
+
+    move-result v0
+
+    if-eqz v0, :cond_40
+
+    .line 33
+    const/16 v0, 0x17
+
+    goto/16 :goto_c7
+
+    .line 34
+    :cond_40
+    sget-object v0, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->Companion:Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;
+
+    invoke-virtual {v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;->getKeyboardTap-5zf0vsI()I
+
+    move-result v0
+
+    invoke-static {p1, v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->equals-impl0(II)Z
+
+    move-result v0
+
+    if-eqz v0, :cond_4f
+
+    const/4 v0, 0x3
+
+    goto/16 :goto_c7
+
+    .line 35
+    :cond_4f
+    sget-object v0, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->Companion:Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;
+
+    invoke-virtual {v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;->getLongPress-5zf0vsI()I
+
+    move-result v0
+
+    invoke-static {p1, v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->equals-impl0(II)Z
+
+    move-result v0
+
+    if-eqz v0, :cond_5e
+
+    const/4 v0, 0x0
+
+    goto/16 :goto_c7
+
+    .line 36
+    :cond_5e
+    sget-object v0, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->Companion:Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;
+
+    invoke-virtual {v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;->getReject-5zf0vsI()I
+
+    move-result v0
+
+    invoke-static {p1, v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->equals-impl0(II)Z
+
+    move-result v0
+
+    if-eqz v0, :cond_6d
+
+    const/16 v0, 0x11
+
+    goto :goto_c7
+
+    .line 37
+    :cond_6d
+    sget-object v0, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->Companion:Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;
+
+    invoke-virtual {v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;->getSegmentFrequentTick-5zf0vsI()I
+
+    move-result v0
+
+    invoke-static {p1, v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->equals-impl0(II)Z
+
+    move-result v0
+
+    if-eqz v0, :cond_7c
+
+    .line 38
+    const/16 v0, 0x1b
+
+    goto :goto_c7
+
+    .line 39
+    :cond_7c
+    sget-object v0, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->Companion:Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;
+
+    invoke-virtual {v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;->getSegmentTick-5zf0vsI()I
+
+    move-result v0
+
+    invoke-static {p1, v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->equals-impl0(II)Z
+
+    move-result v0
+
+    if-eqz v0, :cond_8b
+
+    const/16 v0, 0x1a
+
+    goto :goto_c7
+
+    .line 40
+    :cond_8b
+    sget-object v0, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->Companion:Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;
+
+    invoke-virtual {v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;->getTextHandleMove-5zf0vsI()I
+
+    move-result v0
+
+    invoke-static {p1, v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->equals-impl0(II)Z
+
+    move-result v0
+
+    if-eqz v0, :cond_9a
+
+    const/16 v0, 0x9
+
+    goto :goto_c7
+
+    .line 41
+    :cond_9a
+    sget-object v0, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->Companion:Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;
+
+    invoke-virtual {v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;->getToggleOff-5zf0vsI()I
+
+    move-result v0
+
+    invoke-static {p1, v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->equals-impl0(II)Z
+
+    move-result v0
+
+    if-eqz v0, :cond_a9
+
+    const/16 v0, 0x16
+
+    goto :goto_c7
+
+    .line 42
+    :cond_a9
+    sget-object v0, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->Companion:Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;
+
+    invoke-virtual {v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;->getToggleOn-5zf0vsI()I
+
+    move-result v0
+
+    invoke-static {p1, v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->equals-impl0(II)Z
+
+    move-result v0
+
+    if-eqz v0, :cond_b8
+
+    const/16 v0, 0x15
+
+    goto :goto_c7
+
+    .line 43
+    :cond_b8
+    sget-object v0, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->Companion:Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;
+
+    invoke-virtual {v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType$Companion;->getVirtualKey-5zf0vsI()I
+
+    move-result v0
+
+    invoke-static {p1, v0}, Landroidx/compose/ui/hapticfeedback/HapticFeedbackType;->equals-impl0(II)Z
+
+    move-result v0
+
+    if-eqz v0, :cond_c6
+
+    const/4 v0, 0x1
+
+    goto :goto_c7
+
+    .line 44
+    :cond_c6
+    const/4 v0, -0x1
+
+    .line 28
+    :goto_c7
+    nop
+
+    .line 27
+    nop
+
+    .line 46
+    .local v0, "constant":I
+    iget-object v1, p0, Landroidx/compose/ui/hapticfeedback/PlatformHapticFeedback;->view:Landroid/view/View;
+
+    invoke-static {v1, v0}, Landroidx/core/view/ViewCompat;->performHapticFeedback(Landroid/view/View;I)Z
+
+    .line 47
+    return-void
+.end method

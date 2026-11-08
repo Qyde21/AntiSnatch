@@ -1,0 +1,74 @@
+.class public final synthetic Landroidx/compose/material/TextFieldImplKt$$ExternalSyntheticLambda3;
+.super Ljava/lang/Object;
+.source "D8$$SyntheticClass"
+
+# interfaces
+.implements Lkotlin/jvm/functions/Function2;
+
+
+# annotations
+.annotation runtime Lcom/android/tools/r8/annotations/LambdaMethod;
+    holder = "Landroidx/compose/material/TextFieldImplKt;"
+    method = "Decoration_euL9pac$lambda$0"
+    proto = "(JLjava/lang/Float;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;I)Lkotlin/Unit;"
+.end annotation
+
+.annotation build Lcom/android/tools/r8/annotations/SynthesizedClassV2;
+    apiLevel = -0x2
+    kind = 0x1c
+    versionHash = "9c309e1fe0130a519f42d3ae97bdf2a57c6c84ce491b9cd262c375723ff28541"
+.end annotation
+
+
+# instance fields
+.field public final synthetic f$0:J
+
+.field public final synthetic f$1:Ljava/lang/Float;
+
+.field public final synthetic f$2:Lkotlin/jvm/functions/Function2;
+
+
+# direct methods
+.method public synthetic constructor <init>(JLjava/lang/Float;Lkotlin/jvm/functions/Function2;)V
+    .registers 5
+
+    .line 0
+    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+
+    iput-wide p1, p0, Landroidx/compose/material/TextFieldImplKt$$ExternalSyntheticLambda3;->f$0:J
+
+    iput-object p3, p0, Landroidx/compose/material/TextFieldImplKt$$ExternalSyntheticLambda3;->f$1:Ljava/lang/Float;
+
+    iput-object p4, p0, Landroidx/compose/material/TextFieldImplKt$$ExternalSyntheticLambda3;->f$2:Lkotlin/jvm/functions/Function2;
+
+    return-void
+.end method
+
+
+# virtual methods
+.method public final invoke(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+    .registers 9
+
+    .line 0
+    iget-wide v0, p0, Landroidx/compose/material/TextFieldImplKt$$ExternalSyntheticLambda3;->f$0:J
+
+    iget-object v2, p0, Landroidx/compose/material/TextFieldImplKt$$ExternalSyntheticLambda3;->f$1:Ljava/lang/Float;
+
+    iget-object v3, p0, Landroidx/compose/material/TextFieldImplKt$$ExternalSyntheticLambda3;->f$2:Lkotlin/jvm/functions/Function2;
+
+    move-object v4, p1
+
+    check-cast v4, Landroidx/compose/runtime/Composer;
+
+    check-cast p2, Ljava/lang/Integer;
+
+    invoke-virtual {p2}, Ljava/lang/Integer;->intValue()I
+
+    move-result v5
+
+    invoke-static/range {v0 .. v5}, Landroidx/compose/material/TextFieldImplKt;->Decoration_euL9pac$lambda$0(JLjava/lang/Float;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;I)Lkotlin/Unit;
+
+    move-result-object p1
+
+    return-object p1
+.end method

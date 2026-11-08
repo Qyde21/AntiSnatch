@@ -1,0 +1,177 @@
+.class public final Landroidx/compose/material/MaterialTheme_androidKt;
+.super Ljava/lang/Object;
+.source "MaterialTheme.android.kt"
+
+
+# annotations
+.annotation runtime Lkotlin/Metadata;
+    d1 = {
+        "\u0000\u0014\n\u0000\n\u0002\u0010\u0002\n\u0000\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0008\u0002\u001a \u0010\u0000\u001a\u00020\u00012\u0011\u0010\u0002\u001a\r\u0012\u0004\u0012\u00020\u00010\u0003\u00a2\u0006\u0002\u0008\u0004H\u0001\u00a2\u0006\u0002\u0010\u0005\u00a8\u0006\u0006"
+    }
+    d2 = {
+        "PlatformMaterialTheme",
+        "",
+        "content",
+        "Lkotlin/Function0;",
+        "Landroidx/compose/runtime/Composable;",
+        "(Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;I)V",
+        "material"
+    }
+    k = 0x2
+    mv = {
+        0x2,
+        0x0,
+        0x0
+    }
+    xi = 0x30
+.end annotation
+
+
+# direct methods
+.method public static final PlatformMaterialTheme(Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;I)V
+    .registers 7
+    .param p0, "content"    # Lkotlin/jvm/functions/Function2;
+    .param p1, "$composer"    # Landroidx/compose/runtime/Composer;
+    .param p2, "$changed"    # I
+    .annotation system Ldalvik/annotation/Signature;
+        value = {
+            "(",
+            "Lkotlin/jvm/functions/Function2<",
+            "-",
+            "Landroidx/compose/runtime/Composer;",
+            "-",
+            "Ljava/lang/Integer;",
+            "Lkotlin/Unit;",
+            ">;",
+            "Landroidx/compose/runtime/Composer;",
+            "I)V"
+        }
+    .end annotation
+
+    .line 22
+    const v0, -0x6401ddc9
+
+    invoke-interface {p1, v0}, Landroidx/compose/runtime/Composer;->startRestartGroup(I)Landroidx/compose/runtime/Composer;
+
+    move-result-object p1
+
+    const-string v1, "C(PlatformMaterialTheme)N(content)22@789L9:MaterialTheme.android.kt#jmzs0o"
+
+    invoke-static {p1, v1}, Landroidx/compose/runtime/ComposerKt;->sourceInformation(Landroidx/compose/runtime/Composer;Ljava/lang/String;)V
+
+    move v1, p2
+
+    .local v1, "$dirty":I
+    and-int/lit8 v2, p2, 0x6
+
+    const/4 v3, 0x2
+
+    if-nez v2, :cond_1c
+
+    invoke-interface {p1, p0}, Landroidx/compose/runtime/Composer;->changedInstance(Ljava/lang/Object;)Z
+
+    move-result v2
+
+    if-eqz v2, :cond_1a
+
+    const/4 v2, 0x4
+
+    goto :goto_1b
+
+    :cond_1a
+    move v2, v3
+
+    :goto_1b
+    or-int/2addr v1, v2
+
+    :cond_1c
+    and-int/lit8 v2, v1, 0x3
+
+    if-eq v2, v3, :cond_22
+
+    const/4 v2, 0x1
+
+    goto :goto_23
+
+    :cond_22
+    const/4 v2, 0x0
+
+    :goto_23
+    and-int/lit8 v3, v1, 0x1
+
+    invoke-interface {p1, v2, v3}, Landroidx/compose/runtime/Composer;->shouldExecute(ZI)Z
+
+    move-result v2
+
+    if-eqz v2, :cond_4a
+
+    invoke-static {}, Landroidx/compose/runtime/ComposerKt;->isTraceInProgress()Z
+
+    move-result v2
+
+    if-eqz v2, :cond_37
+
+    const/4 v2, -0x1
+
+    const-string v3, "androidx.compose.material.PlatformMaterialTheme (MaterialTheme.android.kt:21)"
+
+    invoke-static {v0, v1, v2, v3}, Landroidx/compose/runtime/ComposerKt;->traceEventStart(IIILjava/lang/String;)V
+
+    .line 23
+    :cond_37
+    and-int/lit8 v0, v1, 0xe
+
+    invoke-static {v0}, Ljava/lang/Integer;->valueOf(I)Ljava/lang/Integer;
+
+    move-result-object v0
+
+    invoke-interface {p0, p1, v0}, Lkotlin/jvm/functions/Function2;->invoke(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+
+    invoke-static {}, Landroidx/compose/runtime/ComposerKt;->isTraceInProgress()Z
+
+    move-result v0
+
+    if-eqz v0, :cond_4d
+
+    invoke-static {}, Landroidx/compose/runtime/ComposerKt;->traceEventEnd()V
+
+    goto :goto_4d
+
+    .line 22
+    :cond_4a
+    invoke-interface {p1}, Landroidx/compose/runtime/Composer;->skipToGroupEnd()V
+
+    .line 24
+    :cond_4d
+    :goto_4d
+    invoke-interface {p1}, Landroidx/compose/runtime/Composer;->endRestartGroup()Landroidx/compose/runtime/ScopeUpdateScope;
+
+    move-result-object v0
+
+    if-eqz v0, :cond_5b
+
+    new-instance v2, Landroidx/compose/material/MaterialTheme_androidKt$$ExternalSyntheticLambda0;
+
+    invoke-direct {v2, p0, p2}, Landroidx/compose/material/MaterialTheme_androidKt$$ExternalSyntheticLambda0;-><init>(Lkotlin/jvm/functions/Function2;I)V
+
+    invoke-interface {v0, v2}, Landroidx/compose/runtime/ScopeUpdateScope;->updateScope(Lkotlin/jvm/functions/Function2;)V
+
+    :cond_5b
+    return-void
+.end method
+
+.method static final PlatformMaterialTheme$lambda$0(Lkotlin/jvm/functions/Function2;ILandroidx/compose/runtime/Composer;I)Lkotlin/Unit;
+    .registers 5
+
+    or-int/lit8 v0, p1, 0x1
+
+    invoke-static {v0}, Landroidx/compose/runtime/RecomposeScopeImplKt;->updateChangedFlags(I)I
+
+    move-result v0
+
+    invoke-static {p0, p2, v0}, Landroidx/compose/material/MaterialTheme_androidKt;->PlatformMaterialTheme(Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;I)V
+
+    sget-object v0, Lkotlin/Unit;->INSTANCE:Lkotlin/Unit;
+
+    return-object v0
+.end method
