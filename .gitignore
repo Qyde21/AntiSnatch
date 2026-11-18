@@ -1,4 +1,55 @@
-# Project exclude paths
-/.gradle/
-/app/build/
-/build/
+# Built application files
+*.apk
+*.aar
+*.ap_
+*.aab
+
+# Files for the Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
+# Generated files
+bin/
+gen/
+out/
+
+# Gradle files
+.gradle/
+build/
+app/build/
+
+# Local configuration file (sdk.path, etc.)
+local.properties
+
+# IDE specific files
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/dictionaries/
+.idea/shelf/
+.idea/caches/
+.idea/deploymentTargetSelector.xml
+.idea/assetWizardSettings.xml
+.idea/navEditor.xml
+.idea/gradle.xml
+.idea/kotlinc.xml
+.idea/codeStyles/
+.idea/libraries/
+*.iml
+
+# OS specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Profiler and test outputs
+captures/
+.externalNativeBuild/
+.cxx/
+.idea/render.experimental.xml

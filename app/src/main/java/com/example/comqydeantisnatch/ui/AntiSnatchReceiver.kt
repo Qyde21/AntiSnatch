@@ -50,7 +50,7 @@ class AntiSnatchReceiver : BroadcastReceiver() {
                 )
             }
             context.startActivity(decoyIntent)
-            startPanic(context)
+            startPanic(context, "boot_while_armed")
         }
     }
 
@@ -84,7 +84,7 @@ class AntiSnatchReceiver : BroadcastReceiver() {
                 )
             } else {
                 Log.w(TAG, "Remote trigger from trusted contact: $sender")
-                startPanic(context)
+                startPanic(context, "remote_command")
             }
         }
     }
@@ -161,19 +161,21 @@ class AntiSnatchReceiver : BroadcastReceiver() {
         val state = intent.getIntExtra(EXTRA_SIM_STATE, -1)
         if (state == TelephonyManager.SIM_STATE_ABSENT) {
             Log.w(TAG, "SIM card removed!")
-            startPanic(context)
+            startPanic(context, "sim_removed")
         }
     }
 
     private fun handlePowerDisconnected(context: Context) {
         if ((Config.isArmed(context) || Config.isChargerGuardEnabled(context)) && Config.hasPin(context)) {
             Log.w(TAG, "CHARGER UNPLUGGED! Triggering emergency decoy and panic mode.")
-            startPanic(context)
+            startPanic(context, "charger_unplugged")
         }
     }
 
-    private fun startPanic(context: Context) {
-        val i = Intent(context, CheckInService::class.java).setAction(CheckInService.ACTION_PANIC)
+    private fun startPanic(context: Context, reason: String) {
+        val i = Intent(context, CheckInService::class.java)
+            .setAction(CheckInService.ACTION_PANIC)
+            .putExtra(CheckInService.EXTRA_REASON, reason)
         if (Build.VERSION.SDK_INT >= 26) context.startForegroundService(i) else context.startService(i)
     }
 }

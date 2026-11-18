@@ -131,4 +131,20 @@ object Config {
 
     fun isSirenAlarmEnabled(c: Context) = prefs(c).getBoolean("siren_alarm", false)
     fun setSirenAlarmEnabled(c: Context, enabled: Boolean) = prefs(c).edit().putBoolean("siren_alarm", enabled).apply()
+
+    // ---------- Photo Upload & URL ----------
+    fun getPhotoUploadUrl(c: Context): String = prefs(c).getString("photo_upload_url", "") ?: ""
+    fun setPhotoUploadUrl(c: Context, url: String) = prefs(c).edit().putString("photo_upload_url", url).apply()
+
+    fun getLatestPhotoUrl(c: Context): String = prefs(c).getString("latest_photo_url", "") ?: ""
+    fun setLatestPhotoUrl(c: Context, url: String) = prefs(c).edit().putString("latest_photo_url", url).apply()
+
+    // ---------- Update Settings ----------
+    fun getUpdateUrl(c: Context): String =
+        prefs(c).getString("update_url", "https://raw.githubusercontent.com/Qyde21/AntiSnatch/master/version.json") ?: "https://raw.githubusercontent.com/Qyde21/AntiSnatch/master/version.json"
+    fun setUpdateUrl(c: Context, url: String) = prefs(c).edit().putString("update_url", url).apply()
+
+    fun getGithubToken(c: Context): String =
+        prefs(c).getString("github_token", "") ?: ""
+    fun setGithubToken(c: Context, token: String) = prefs(c).edit().putString("github_token", token).apply()
 }

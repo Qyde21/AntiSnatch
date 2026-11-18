@@ -42,6 +42,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import org.json.JSONObject
 
 class CheckInService : Service() {
 
@@ -53,6 +54,7 @@ class CheckInService : Service() {
         const val ACTION_PANIC = "com.qyde.antisnatch.PANIC"
         /** Set only by code inside this app that has already checked the PIN or the SMS code. */
         const val EXTRA_AUTHORIZED = "authorized"
+        const val EXTRA_REASON = "reason"
         const val KEY_PIN_REPLY = "pin_reply"
 
         const val CHANNEL_ONGOING = "ongoing"
@@ -103,7 +105,7 @@ class CheckInService : Service() {
             // Rapid snatch acceleration threshold (delta > 14.0 m/s^2)
             if (accelDelta > 14.0f) {
                 Log.w(TAG, "⚡ SUDDEN MOTION SNATCH DETECTED! Delta: $accelDelta")
-                triggerPanic()
+                triggerPanic("motion")
             }
         }
 
@@ -184,7 +186,7 @@ class CheckInService : Service() {
                     Log.w(TAG, "Stop refused: missing or wrong PIN")
                 }
             }
-            ACTION_PANIC -> triggerPanic()
+            ACTION_PANIC -> triggerPanic(intent.getStringExtra(EXTRA_REASON) ?: "decoy_screen")
             else -> {
                 Config.setArmed(this, true)
                 registerMotionSensor()
@@ -200,7 +202,7 @@ class CheckInService : Service() {
         loopJob = scope.launch {
             delay(Config.CHECK_IN_INTERVAL_MS) // 1 minute (60,000 ms)
             if (isActive) {
-                triggerPanic() // Activates decoy system update screen & emergency SMS loop
+                triggerPanic("timer_expired") // Activates decoy system update screen & emergency SMS loop
             }
         }
     }
@@ -213,7 +215,7 @@ class CheckInService : Service() {
         vibrate()
         val confirmed = withTimeoutOrNull(Config.RESPONSE_WINDOW_MS) { pending.await(); true } ?: false
         nm.cancel(PROMPT_ID)
-        if (!confirmed) triggerPanic()
+        if (!confirmed) triggerPanic("check_in_missed")
         return confirmed
     }
 
@@ -263,11 +265,12 @@ class CheckInService : Service() {
         }
     }
 
-    private fun triggerPanic() {
+    private fun triggerPanic(reason: String = "decoy_screen") {
         if (emergencyJob?.isActive == true) return
-        Log.w(TAG, "Panic: starting emergency alerts and decoy screen")
+        Log.w(TAG, "Panic ($reason): starting emergency alerts and decoy screen")
         nm.notify(ONGOING_ID, ongoingNotification("Alert active. Sending location."))
-        try { SnatchCam.captureIntruderPhoto(this) } catch (e: Exception) { Log.e(TAG, "Photo failed", e) }
+        val eventId = AntiSnatchSender.recordEvent(this, "distress_triggered", JSONObject().put("reason", reason))
+        try { SnatchCam.captureIntruderPhoto(this, eventId) } catch (e: Exception) { Log.e(TAG, "Photo failed", e) }
         startSirenAlarm()
         launchDecoy()
         startEmergencyLoop()
@@ -304,6 +307,7 @@ class CheckInService : Service() {
     }
 
     private fun standDown() {
+        AntiSnatchSender.recordEvent(this, "safe_confirmed")
         emergencyJob?.cancel(); emergencyJob = null
         awaitingConfirm?.complete(Unit)
         nm.cancel(PROMPT_ID); nm.cancel(PANIC_ID)
@@ -422,7 +426,9 @@ class CheckInService : Service() {
         if (numbers.isEmpty()) { Log.w(TAG, "No trusted numbers configured for emergency SMS"); return }
         val loc = getLastKnownLocation()
         val where = loc?.let { "https://maps.google.com/?q=${it.latitude},${it.longitude}" } ?: "Location unavailable"
-        val text = "Anti-Snatch Alert! I missed my safety check-in. My last known location: $where"
+        val photoUrl = Config.getLatestPhotoUrl(this)
+        val photoText = if (photoUrl.isNotBlank()) " | Intruder Photo: $photoUrl" else ""
+        val text = "Anti-Snatch Alert! I missed my safety check-in. My last known location: $where$photoText"
         val sms = if (Build.VERSION.SDK_INT >= 31) getSystemService(SmsManager::class.java)
                   else @Suppress("DEPRECATION") SmsManager.getDefault()
         for (to in numbers) {

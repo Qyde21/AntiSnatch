@@ -28,11 +28,15 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.comqydeantisnatch.ui.AppUpdater
+import com.example.comqydeantisnatch.ui.AntiSnatchSender
 import com.example.comqydeantisnatch.ui.CheckInService
+import kotlinx.coroutines.launch
 import com.example.comqydeantisnatch.ui.Config
 import com.example.comqydeantisnatch.ui.DecoyActivity
 import com.example.comqydeantisnatch.ui.PinSetupCard
@@ -48,6 +52,21 @@ class MainActivity : ComponentActivity() {
             AntiSnatchTheme {
                 AntiSnatchMainScreen()
             }
+        }
+
+        if (AntiSnatchSender.token(this) == null) {
+            val input = android.widget.EditText(this).apply {
+                inputType = android.text.InputType.TYPE_CLASS_TEXT or
+                    android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+            }
+            android.app.AlertDialog.Builder(this)
+                .setTitle("Cloud device token")
+                .setView(input)
+                .setPositiveButton("Save") { _, _ ->
+                    AntiSnatchSender.saveToken(this, input.text.toString())
+                    AntiSnatchSender.recordEvent(this, "check_in_confirmed") // connectivity test
+                }
+                .show()
         }
     }
 }
@@ -520,6 +539,130 @@ fun AntiSnatchMainScreen() {
                         fontSize = 13.sp,
                         lineHeight = 18.sp
                     )
+                }
+            }
+
+            // App Update Card
+            AppUpdateCard()
+        }
+    }
+}
+
+@Composable
+fun AppUpdateCard() {
+    val context = LocalContext.current
+    val currentVersionName = remember(context) { AppUpdater.getCurrentVersionName(context) }
+    val currentVersionCode = remember(context) { AppUpdater.getCurrentVersionCode(context) }
+    var updateStatus by remember { mutableStateOf("Tap 'Check for Updates' to verify (v$currentVersionName)") }
+    var latestInfo by remember { mutableStateOf<AppUpdater.UpdateInfo?>(null) }
+    var isChecking by remember { mutableStateOf(false) }
+    var showSettings by remember { mutableStateOf(false) }
+    var customUrl by remember { mutableStateOf(Config.getUpdateUrl(context)) }
+    var tokenInput by remember { mutableStateOf(Config.getGithubToken(context)) }
+    val scope = rememberCoroutineScope()
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "🔄 App Updates",
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    fontSize = 14.sp
+                )
+                TextButton(onClick = { showSettings = !showSettings }) {
+                    Text(if (showSettings) "Hide Config" else "Update Config", color = Color(0xFF00E676), fontSize = 12.sp)
+                }
+            }
+
+            if (showSettings) {
+                OutlinedTextField(
+                    value = customUrl,
+                    onValueChange = {
+                        customUrl = it
+                        Config.setUpdateUrl(context, it)
+                    },
+                    label = { Text("version.json URL", color = Color.Gray) },
+                    textStyle = TextStyle(color = Color.White, fontSize = 12.sp),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    value = tokenInput,
+                    onValueChange = {
+                        tokenInput = it
+                        Config.setGithubToken(context, it)
+                    },
+                    label = { Text("GitHub Personal Access Token (for Private Repo)", color = Color.Gray) },
+                    textStyle = TextStyle(color = Color.White, fontSize = 12.sp),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+            }
+
+            Text(
+                text = updateStatus,
+                color = Color.Gray,
+                fontSize = 13.sp
+            )
+            latestInfo?.releaseNotes?.let { notes ->
+                Text(
+                    text = "Release Notes: $notes",
+                    color = Color.LightGray,
+                    fontSize = 12.sp
+                )
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = {
+                        isChecking = true
+                        updateStatus = "Checking for updates..."
+                        scope.launch {
+                            val url = Config.getUpdateUrl(context)
+                            val token = Config.getGithubToken(context).takeIf { it.isNotBlank() }
+                            val result = AppUpdater.checkForUpdateResult(url, token)
+                            isChecking = false
+                            when (result) {
+                                is AppUpdater.CheckResult.Success -> {
+                                    val info = result.info
+                                    if (info.versionCode > currentVersionCode) {
+                                        latestInfo = info
+                                        updateStatus = "New version ${info.versionName} available!"
+                                    } else {
+                                        latestInfo = null
+                                        updateStatus = "You are on the latest version (v$currentVersionName)."
+                                    }
+                                }
+                                is AppUpdater.CheckResult.Error -> {
+                                    updateStatus = result.reason
+                                }
+                            }
+                        }
+                    },
+                    enabled = !isChecking,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676))
+                ) {
+                    Text(if (isChecking) "Checking..." else "Check for Updates", color = Color.Black)
+                }
+
+                latestInfo?.let { info ->
+                    Button(
+                        onClick = {
+                            updateStatus = "Downloading update..."
+                            AppUpdater.downloadAndInstall(context, info.apkUrl)
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFB74D))
+                    ) {
+                        Text("Download & Install", color = Color.Black)
+                    }
                 }
             }
         }

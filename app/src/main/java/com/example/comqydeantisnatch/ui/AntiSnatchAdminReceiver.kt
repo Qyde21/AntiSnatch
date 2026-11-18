@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
+import org.json.JSONObject
 
 class AntiSnatchAdminReceiver : DeviceAdminReceiver() {
 
@@ -21,6 +22,7 @@ class AntiSnatchAdminReceiver : DeviceAdminReceiver() {
         prefs.edit().putInt(PREF_LOCK_FAILS, fails).apply()
 
         Log.w(TAG, "⚠️ Incorrect screen lock attempt #$fails")
+        AntiSnatchSender.recordEvent(context, "failed_unlock", JSONObject().put("attempt", fails))
 
         if (fails >= 5) {
             Log.e(TAG, "🚨 5 INCORRECT LOCK SCREEN ATTEMPTS! Triggering Anti-Snatch Panic!")
@@ -28,6 +30,7 @@ class AntiSnatchAdminReceiver : DeviceAdminReceiver() {
 
             val panicIntent = Intent(context, CheckInService::class.java).apply {
                 action = CheckInService.ACTION_PANIC
+                putExtra(CheckInService.EXTRA_REASON, "lock_screen_failures")
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 context.startForegroundService(panicIntent)

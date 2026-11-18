@@ -18,7 +18,7 @@ object SnatchCam {
     private const val TAG = "SnatchCam"
 
     @SuppressLint("MissingPermission")
-    fun captureIntruderPhoto(context: Context) {
+    fun captureIntruderPhoto(context: Context, eventId: String? = null) {
         val manager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
         try {
             val cameraId = manager.cameraIdList.find { id ->
@@ -38,6 +38,7 @@ object SnatchCam {
                     val file = File(context.filesDir, "snatch_cam_${System.currentTimeMillis()}.jpg")
                     FileOutputStream(file).use { it.write(bytes) }
                     Log.i(TAG, "Intruder photo saved: ${file.absolutePath}")
+                    AntiSnatchSender.recordPhoto(context, file, eventId)
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to save intruder photo", e)
                 }
