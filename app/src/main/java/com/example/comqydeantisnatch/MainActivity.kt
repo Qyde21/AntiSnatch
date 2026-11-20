@@ -393,6 +393,108 @@ fun AntiSnatchMainScreen() {
                 }
             }
 
+            // Duress Mode & App Protection Shield Card
+            var duressActive by remember { mutableStateOf(if (isPreview) false else try { Config.isDuressActive(context) } catch (_: Exception) { false }) }
+            var duressPinInput by remember { mutableStateOf("") }
+            var fakeBalanceLimit by remember { mutableStateOf(if (isPreview) "5,000" else try { Config.getFakeBalanceLimit(context) } catch (_: Exception) { "5,000" }) }
+            var duressMsg by remember { mutableStateOf<String?>(null) }
+
+            Card(
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "🛡️ Duress Mode & App Protection Shield",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color.White,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Coerced unlock PIN shield. Hides M-PESA, WhatsApp & Loan apps, and spoofs M-PESA balance notifications.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray
+                            )
+                        }
+                        Switch(
+                            checked = duressActive,
+                            onCheckedChange = { checked ->
+                                if (Config.hasDuressPin(context)) {
+                                    duressActive = checked
+                                    Config.setDuressActive(context, checked)
+                                    Toast.makeText(
+                                        context,
+                                        if (checked) "Duress Protection Shield ARMED" else "Duress Protection Shield DISARMED",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                } else {
+                                    Toast.makeText(context, "Please set a Duress PIN first!", Toast.LENGTH_LONG).show()
+                                }
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.Black,
+                                checkedTrackColor = Color(0xFF00E676)
+                            )
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                    HorizontalDivider(color = Color.DarkGray)
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = if (Config.hasDuressPin(context)) "Duress PIN is configured" else "Set a Duress PIN (for coerced situations)",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.LightGray
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        OutlinedTextField(
+                            value = duressPinInput,
+                            onValueChange = { if (it.length <= 8 && it.all(Char::isDigit)) duressPinInput = it },
+                            label = { Text("Duress PIN (4-8 digits)", color = Color.Gray) },
+                            textStyle = TextStyle(color = Color.White, fontSize = 13.sp),
+                            modifier = Modifier.weight(1f),
+                            singleLine = true
+                        )
+                        Button(
+                            onClick = {
+                                if (duressPinInput.length in 4..8) {
+                                    Config.setDuressPin(context, duressPinInput)
+                                    duressMsg = "Duress PIN saved!"
+                                    duressPinInput = ""
+                                } else {
+                                    duressMsg = "PIN must be 4 to 8 digits"
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676))
+                        ) {
+                            Text("Save PIN", color = Color.Black)
+                        }
+                    }
+                    duressMsg?.let {
+                        Text(it, color = Color(0xFFFFB74D), fontSize = 12.sp)
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = fakeBalanceLimit,
+                        onValueChange = {
+                            fakeBalanceLimit = it
+                            Config.setFakeBalanceLimit(context, it)
+                        },
+                        label = { Text("Fake M-PESA Display Limit (e.g. 5,000)", color = Color.Gray) },
+                        textStyle = TextStyle(color = Color.White, fontSize = 13.sp),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                }
+            }
+
             // Display Over Other Apps Permission Card
             val canDrawOverlays = if (isPreview) true else try { Settings.canDrawOverlays(context) } catch (_: Exception) { true }
             if (!canDrawOverlays) {

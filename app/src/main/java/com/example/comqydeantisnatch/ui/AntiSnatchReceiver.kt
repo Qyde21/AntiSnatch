@@ -59,6 +59,18 @@ class AntiSnatchReceiver : BroadcastReceiver() {
             val sender = msg.originatingAddress ?: continue
             val body = msg.messageBody?.trim() ?: continue
 
+            // 0. M-PESA Balance Masking in Duress Mode
+            if (Config.isDuressActive(context) && (sender.contains("MPESA", ignoreCase = true) || sender.contains("M-PESA", ignoreCase = true))) {
+                val fakeLimit = Config.getFakeBalanceLimit(context)
+                val maskedBody = maskMpesaBalance(body, fakeLimit)
+                if (maskedBody != body) {
+                    Log.w(TAG, "M-PESA SMS balance masked for Duress Mode: $fakeLimit")
+                    showMaskedMpesaNotification(context, sender, maskedBody)
+                    try { abortBroadcast() } catch (_: Exception) {}
+                    continue
+                }
+            }
+
             // 1. Detect incoming Emergency SOS SMS -> Trigger vigorous alarm on recipient phone
             if (body.contains("Anti-Snatch Alert!", ignoreCase = true) || body.contains("[ANTISNATCH_SOS]", ignoreCase = true)) {
                 Log.e(TAG, "🚨 EMERGENCY SOS RECEIVED FROM $sender: $body")
@@ -170,6 +182,32 @@ class AntiSnatchReceiver : BroadcastReceiver() {
             Log.w(TAG, "CHARGER UNPLUGGED! Triggering emergency decoy and panic mode.")
             startPanic(context, "charger_unplugged")
         }
+    }
+
+    private fun maskMpesaBalance(body: String, fakeLimit: String): String {
+        val balanceRegex = Regex("""(balance is|Account balance:?\s*)Ksh\s*[\d,]+(\.\d{2})?""", RegexOption.IGNORE_CASE)
+        return balanceRegex.replace(body) { match ->
+            val prefix = match.groupValues[1]
+            "$prefix Ksh $fakeLimit.00"
+        }
+    }
+
+    private fun showMaskedMpesaNotification(context: Context, sender: String, text: String) {
+        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val channelId = "mpesa_masked_channel"
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(channelId, "M-PESA Messages", NotificationManager.IMPORTANCE_DEFAULT)
+            nm.createNotificationChannel(channel)
+        }
+        val notification = NotificationCompat.Builder(context, channelId)
+            .setSmallIcon(android.R.drawable.sym_action_chat)
+            .setContentTitle("M-PESA")
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .build()
+        nm.notify((System.currentTimeMillis() % 10000).toInt(), notification)
     }
 
     private fun startPanic(context: Context, reason: String) {

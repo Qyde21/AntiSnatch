@@ -35,11 +35,30 @@ object DecoyState {
 class DecoyGuardService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        if (!DecoyState.active || event == null) return
-        if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
-        // The shade and quick settings are windows owned by System UI.
-        if (event.packageName?.toString() != "com.android.systemui") return
-        closeShade()
+        if (event == null) return
+        val pkgName = event.packageName?.toString() ?: return
+
+        // 1. Decoy Notification Shade Blocker
+        if (DecoyState.active && event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            if (pkgName == "com.android.systemui") {
+                closeShade()
+                return
+            }
+        }
+
+        // 2. Duress Mode App Protection Shield
+        if (Config.isDuressActive(this) && event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            val protectedPkgs = Config.getProtectedPackages(this)
+            if (protectedPkgs.contains(pkgName)) {
+                // Block app access by performing HOME action
+                performGlobalAction(GLOBAL_ACTION_HOME)
+                android.widget.Toast.makeText(
+                    this,
+                    "Service temporarily unavailable due to system maintenance.",
+                    android.widget.Toast.LENGTH_LONG
+                ).show()
+            }
+        }
     }
 
     private fun closeShade() {

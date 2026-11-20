@@ -103,6 +103,51 @@ object Config {
         return ok
     }
 
+    // ---------- Duress Mode & App Shield ----------
+    private const val KEY_DURESS_PIN_HASH = "duress_pin_hash"
+    private const val KEY_DURESS_PIN_SALT = "duress_pin_salt"
+
+    fun hasDuressPin(c: Context): Boolean = prefs(c).getString(KEY_DURESS_PIN_HASH, null) != null
+
+    fun setDuressPin(c: Context, pin: String): Boolean {
+        if (!validFormat(pin)) return false
+        val salt = ByteArray(16).also { SecureRandom().nextBytes(it) }
+        prefs(c).edit()
+            .putString(KEY_DURESS_PIN_SALT, salt.joinToString("") { "%02x".format(it) })
+            .putString(KEY_DURESS_PIN_HASH, hash(pin, salt))
+            .apply()
+        return true
+    }
+
+    fun verifyDuressPin(c: Context, pin: String): Boolean {
+        val p = prefs(c)
+        val stored = p.getString(KEY_DURESS_PIN_HASH, null) ?: return false
+        val saltHex = p.getString(KEY_DURESS_PIN_SALT, null) ?: return false
+        val salt = saltHex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+        return MessageDigest.isEqual(hash(pin, salt).toByteArray(), stored.toByteArray())
+    }
+
+    fun isDuressActive(c: Context): Boolean = prefs(c).getBoolean("duress_active", false)
+    fun setDuressActive(c: Context, active: Boolean) = prefs(c).edit().putBoolean("duress_active", active).apply()
+
+    fun getFakeBalanceLimit(c: Context): String = prefs(c).getString("fake_balance_limit", "5,000") ?: "5,000"
+    fun setFakeBalanceLimit(c: Context, limit: String) = prefs(c).edit().putString("fake_balance_limit", limit).apply()
+
+    fun getProtectedPackages(c: Context): Set<String> {
+        val defaultSet = setOf(
+            "com.safaricom.mpesa.lifestyle",
+            "com.android.stk",
+            "com.whatsapp",
+            "com.tala.co",
+            "com.branch.co"
+        )
+        return prefs(c).getStringSet("protected_packages", defaultSet) ?: defaultSet
+    }
+
+    fun setProtectedPackages(c: Context, packages: Set<String>) {
+        prefs(c).edit().putStringSet("protected_packages", packages).apply()
+    }
+
     // ---------- Remote code ----------
     fun getRemoteCode(c: Context): String {
         val p = prefs(c)
