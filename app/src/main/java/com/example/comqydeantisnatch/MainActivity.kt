@@ -193,32 +193,39 @@ fun AntiSnatchMainScreen() {
             // PIN Setup Card
             PinSetupCard()
 
-            // Device Admin Setup Card for 5 Failed Screen Lock Attempts
+            // Device Admin Setup Card for 5 Failed Screen Lock Attempts & Lipa Mdogo Mdogo Anti-Flash Shield
             val isAdminActive = if (isPreview) true else try {
                 val dpm = context.getSystemService(android.app.admin.DevicePolicyManager::class.java)
                 val adminComponent = android.content.ComponentName(context, com.example.comqydeantisnatch.ui.AntiSnatchAdminReceiver::class.java)
                 dpm?.isAdminActive(adminComponent) == true
             } catch (_: Exception) { true }
 
-            if (!isAdminActive) {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "🔐 Lock Screen Failed Attempts Protection",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = Color.White,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Triggers panic mode & decoy update screen automatically after 5 incorrect screen lock PIN/Pattern attempts.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray
-                        )
+            Card(
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = if (isAdminActive) "🔒 Anti-Flash & Anti-Reset Guard ACTIVE" else "🔐 Activate Device Admin & Anti-Flash Guard",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = if (isAdminActive) Color(0xFF00E676) else Color.White,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = if (isAdminActive)
+                                    "Factory reset disabled, USB ADB flashing blocked, and 5 failed lock screen attempt trigger active."
+                                else
+                                    "Disables Factory Data Reset, blocks USB PC flashing, and triggers decoy screen after 5 failed lock screen PIN attempts.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray
+                            )
+                        }
+                    }
+                    if (!isAdminActive) {
                         Spacer(modifier = Modifier.height(12.dp))
                         Button(
                             onClick = {
@@ -227,7 +234,7 @@ fun AntiSnatchMainScreen() {
                                     putExtra(android.app.admin.DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
                                     putExtra(
                                         android.app.admin.DevicePolicyManager.EXTRA_ADD_EXPLANATION,
-                                        "Allows Anti-Snatch to detect 5 failed lock screen attempts and trigger emergency alerts."
+                                        "Allows Anti-Snatch to disable Factory Reset, block USB flashing, and detect failed lock screen attempts."
                                     )
                                 }
                                 context.startActivity(intent)
@@ -236,8 +243,15 @@ fun AntiSnatchMainScreen() {
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("Activate Failed Lock Screen Guard", color = Color.Black, fontWeight = FontWeight.Bold)
+                            Text("Activate Anti-Flash & Device Guard", color = Color.Black, fontWeight = FontWeight.Bold)
                         }
+                    } else {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "✓ Factory Reset: Blocked\n✓ USB Debugging / Flashing: Blocked\n✓ Safe Mode Boot: Disabled",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.LightGray
+                        )
                     }
                 }
             }

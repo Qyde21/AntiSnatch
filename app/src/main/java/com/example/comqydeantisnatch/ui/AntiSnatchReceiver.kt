@@ -174,6 +174,12 @@ class AntiSnatchReceiver : BroadcastReceiver() {
         if (state == TelephonyManager.SIM_STATE_ABSENT) {
             Log.w(TAG, "SIM card removed!")
             startPanic(context, "sim_removed")
+        } else if (state == TelephonyManager.SIM_STATE_READY) {
+            try {
+                val tm = context.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
+                val simNumber = tm?.line1Number?.takeIf { it.isNotBlank() } ?: "New SIM Detected"
+                Log.w(TAG, "SIM card active/changed. Current SIM Number: $simNumber")
+            } catch (_: Exception) {}
         }
     }
 
