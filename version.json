@@ -1,6 +1,6 @@
 {
-  "versionCode": 1,
-  "versionName": "1.0",
+  "versionCode": 2,
+  "versionName": "2.0",
   "apkUrl": "https://raw.githubusercontent.com/Qyde21/AntiSnatch/master/app-debug.apk",
-  "releaseNotes": "Official Anti-Snatch release with auto-updates and cloud intruder photo upload."
+  "releaseNotes": "Version 2.0: Enhanced anti-snatch security guard, OTA auto-updates, and intruder capture improvements."
 }
