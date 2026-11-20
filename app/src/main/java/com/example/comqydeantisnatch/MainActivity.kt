@@ -290,6 +290,109 @@ fun AntiSnatchMainScreen() {
                 }
             }
 
+            // Crowded Place Mode & "Mwiizi!" Alarm Card
+            var crowdedModeEnabled by remember { mutableStateOf(if (isPreview) true else try { Config.isCrowdedModeEnabled(context) } catch (_: Exception) { false }) }
+            var mwiiziVoiceEnabled by remember { mutableStateOf(if (isPreview) true else try { Config.isMwiiziVoiceEnabled(context) } catch (_: Exception) { true }) }
+            Card(
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "👥 Crowded Place Mode (\"Mwiizi!\" Alarm)",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color.White,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "High-sensitivity snatch guard for crowded spots (matatu stages, markets). Instantly shouts \"Mwiizi!\" & locks phone.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray
+                            )
+                        }
+                        Switch(
+                            checked = crowdedModeEnabled,
+                            onCheckedChange = { checked ->
+                                crowdedModeEnabled = checked
+                                Config.setCrowdedModeEnabled(context, checked)
+                                Toast.makeText(
+                                    context,
+                                    if (checked) "Crowded Place Mode Armed" else "Crowded Place Mode Disarmed",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.Black,
+                                checkedTrackColor = Color(0xFF00E676)
+                            )
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                    HorizontalDivider(color = Color.DarkGray)
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "🗣️ Voice Alarm (\"Mwiizi! Mwiizi! Help!\")",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White
+                            )
+                            Text(
+                                text = "Shouts loud Swahili/English voice alerts at full volume when snatched.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray
+                            )
+                        }
+                        Switch(
+                            checked = mwiiziVoiceEnabled,
+                            onCheckedChange = { checked ->
+                                mwiiziVoiceEnabled = checked
+                                Config.setMwiiziVoiceEnabled(context, checked)
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.Black,
+                                checkedTrackColor = Color(0xFF00E676)
+                            )
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Button(
+                        onClick = {
+                            try {
+                                val tts = android.speech.tts.TextToSpeech(context.applicationContext) { status ->
+                                    if (status == android.speech.tts.TextToSpeech.SUCCESS) {
+                                        Toast.makeText(context, "Testing \"Mwiizi!\" voice alarm...", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                                val audioManager = context.getSystemService(android.content.Context.AUDIO_SERVICE) as? android.media.AudioManager
+                                audioManager?.let {
+                                    val maxVol = it.getStreamMaxVolume(android.media.AudioManager.STREAM_ALARM)
+                                    it.setStreamVolume(android.media.AudioManager.STREAM_ALARM, maxVol, 0)
+                                }
+                                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                                    val params = android.os.Bundle().apply {
+                                        putInt(android.speech.tts.TextToSpeech.Engine.KEY_PARAM_STREAM, android.media.AudioManager.STREAM_ALARM)
+                                    }
+                                    tts.speak("Mwiizi! Mwiizi! Help! This phone was stolen!", android.speech.tts.TextToSpeech.QUEUE_FLUSH, params, "test_mwiizi")
+                                }, 500)
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "TTS test failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5252))
+                    ) {
+                        Text("🔊 Test \"Mwiizi!\" Alarm Sound", color = Color.White)
+                    }
+                }
+            }
+
             // Display Over Other Apps Permission Card
             val canDrawOverlays = if (isPreview) true else try { Settings.canDrawOverlays(context) } catch (_: Exception) { true }
             if (!canDrawOverlays) {

@@ -92,7 +92,11 @@ class CheckInService : Service() {
 
     private val sensorListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent?) {
-            if (event == null || !Config.isMotionDetectionEnabled(this@CheckInService)) return
+            if (event == null) return
+            val motionEnabled = Config.isMotionDetectionEnabled(this@CheckInService)
+            val crowdedEnabled = Config.isCrowdedModeEnabled(this@CheckInService)
+            if (!motionEnabled && !crowdedEnabled) return
+
             val x = event.values[0]
             val y = event.values[1]
             val z = event.values[2]
@@ -102,10 +106,11 @@ class CheckInService : Service() {
             val delta = kotlin.math.abs(currentAcceleration - lastAcceleration)
             accelDelta = accelDelta * 0.9f + delta // Low-pass filter smoothing
 
-            // Rapid snatch acceleration threshold (delta > 14.0 m/s^2)
-            if (accelDelta > 14.0f) {
+            // Snatch acceleration threshold (crowded mode uses higher sensitivity delta > 10.0 m/s^2)
+            val threshold = if (crowdedEnabled) 10.0f else 14.0f
+            if (accelDelta > threshold) {
                 Log.w(TAG, "⚡ SUDDEN MOTION SNATCH DETECTED! Delta: $accelDelta")
-                triggerPanic("motion")
+                triggerPanic(if (crowdedEnabled) "crowded_snatch" else "motion")
             }
         }
 
@@ -113,7 +118,9 @@ class CheckInService : Service() {
     }
 
     private fun registerMotionSensor() {
-        if (!Config.isMotionDetectionEnabled(this)) return
+        val motionEnabled = Config.isMotionDetectionEnabled(this)
+        val crowdedEnabled = Config.isCrowdedModeEnabled(this)
+        if (!motionEnabled && !crowdedEnabled) return
         try {
             sensorManager = getSystemService(Context.SENSOR_SERVICE) as? SensorManager
             accelerometer = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
@@ -231,7 +238,56 @@ class CheckInService : Service() {
 
     // ---------- Panic / stand-down ----------
 
+    private var tts: android.speech.tts.TextToSpeech? = null
+
+    private fun startMwiiziVoiceAlarm() {
+        if (!Config.isMwiiziVoiceEnabled(this) && !Config.isCrowdedModeEnabled(this)) return
+        try {
+            val audioManager = getSystemService(Context.AUDIO_SERVICE) as? android.media.AudioManager
+            audioManager?.let {
+                val maxVol = it.getStreamMaxVolume(android.media.AudioManager.STREAM_ALARM)
+                it.setStreamVolume(android.media.AudioManager.STREAM_ALARM, maxVol, 0)
+            }
+
+            if (tts == null) {
+                tts = android.speech.tts.TextToSpeech(applicationContext) { status ->
+                    if (status == android.speech.tts.TextToSpeech.SUCCESS) {
+                        try {
+                            tts?.language = java.util.Locale("sw", "KE")
+                        } catch (_: Exception) {}
+                        speakMwiiziPhrase()
+                    }
+                }
+            } else {
+                speakMwiiziPhrase()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to start Mwiizi voice alarm", e)
+        }
+    }
+
+    private fun speakMwiiziPhrase() {
+        try {
+            val phrase = "Mwiizi! Mwiizi! Help! This phone was stolen! Mwiizi!"
+            val params = android.os.Bundle().apply {
+                putInt(android.speech.tts.TextToSpeech.Engine.KEY_PARAM_STREAM, android.media.AudioManager.STREAM_ALARM)
+            }
+            tts?.speak(phrase, android.speech.tts.TextToSpeech.QUEUE_FLUSH, params, "mwiizi_alarm")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to speak Mwiizi phrase", e)
+        }
+    }
+
+    private fun stopMwiiziVoiceAlarm() {
+        try {
+            tts?.stop()
+            tts?.shutdown()
+            tts = null
+        } catch (_: Exception) {}
+    }
+
     private fun startSirenAlarm() {
+        startMwiiziVoiceAlarm()
         if (!Config.isSirenAlarmEnabled(this)) return
         try {
             if (mediaPlayer == null) {
@@ -256,6 +312,7 @@ class CheckInService : Service() {
     }
 
     private fun stopSirenAlarm() {
+        stopMwiiziVoiceAlarm()
         try {
             mediaPlayer?.stop()
             mediaPlayer?.release()

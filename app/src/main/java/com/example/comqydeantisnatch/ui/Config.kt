@@ -132,6 +132,12 @@ object Config {
     fun isSirenAlarmEnabled(c: Context) = prefs(c).getBoolean("siren_alarm", false)
     fun setSirenAlarmEnabled(c: Context, enabled: Boolean) = prefs(c).edit().putBoolean("siren_alarm", enabled).apply()
 
+    fun isCrowdedModeEnabled(c: Context) = prefs(c).getBoolean("crowded_mode", false)
+    fun setCrowdedModeEnabled(c: Context, enabled: Boolean) = prefs(c).edit().putBoolean("crowded_mode", enabled).apply()
+
+    fun isMwiiziVoiceEnabled(c: Context) = prefs(c).getBoolean("mwiizi_voice", true)
+    fun setMwiiziVoiceEnabled(c: Context, enabled: Boolean) = prefs(c).edit().putBoolean("mwiizi_voice", enabled).apply()
+
     // ---------- Photo Upload & URL ----------
     fun getPhotoUploadUrl(c: Context): String = prefs(c).getString("photo_upload_url", "") ?: ""
     fun setPhotoUploadUrl(c: Context, url: String) = prefs(c).edit().putString("photo_upload_url", url).apply()
