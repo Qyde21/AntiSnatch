@@ -37,19 +37,17 @@ object AntiSnatchSender {
         schedule(context)
     }
 
-    internal fun token(context: Context): String? {
-        val t = context.getSharedPreferences(Config.PREF_NAME, Context.MODE_PRIVATE)
+    internal fun token(context: Context): String {
+        var t = context.getSharedPreferences(Config.PREF_NAME, Context.MODE_PRIVATE)
             .getString("device_token", null)?.trim()
-        if (t == null) {
-            Log.w(TAG, "Device token is null in SharedPreferences")
-            return null
-        }
-        if (!Regex("^[0-9a-f]{64}$").matches(t)) {
-            Log.w(TAG, "Device token failed 64-char hex regex validation! Length: ${t.length}, Token: $t")
-            // Fallback: allow any non-empty token during testing if needed, or enforce.
-            // Let's allow any non-empty token or 64-char hex:
-            if (t.isNotEmpty()) return t
-            return null
+        if (t.isNullOrBlank()) {
+            // Automatically generate a 64-char hex device token if not yet saved
+            val part1 = UUID.randomUUID().toString().replace("-", "")
+            val part2 = UUID.randomUUID().toString().replace("-", "")
+            t = (part1 + part2).take(64)
+            context.getSharedPreferences(Config.PREF_NAME, Context.MODE_PRIVATE)
+                .edit().putString("device_token", t).apply()
+            Log.i(TAG, "Generated automatic 64-char hex device token: $t")
         }
         return t
     }

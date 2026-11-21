@@ -40,9 +40,32 @@ object SnatchCam {
                     FileOutputStream(file).use { it.write(bytes) }
                     Log.i(TAG, "Intruder photo saved: ${file.absolutePath}")
                     val photoId = eventId ?: "photo_$timeStamp"
-                    val photoLink = "https://anti-snatch-db.vercel.app/photos/$photoId"
-                    Config.setLatestPhotoUrl(context, photoLink)
+                    
                     AntiSnatchSender.recordPhoto(context, file, photoId)
+
+                    // Direct immediate upload to Vercel
+                    Thread {
+                        try {
+                            val token = AntiSnatchSender.token(context)
+                            val (code, json) = AntiSnatchSender.postAndGetJson(
+                                "/photos", token,
+                                AntiSnatchSender.photoBody(file, photoId)
+                            )
+                            if (code in 200..299 && json != null) {
+                                val photoUrl = json.optString("url").takeIf { it.isNotBlank() }
+                                    ?: json.optString("link").takeIf { it.isNotBlank() }
+                                    ?: json.optString("photo_url").takeIf { it.isNotBlank() }
+                                val pId = json.optString("id").takeIf { it.isNotBlank() }
+                                val resolvedUrl = photoUrl ?: (pId?.let { "https://anti-snatch-db.vercel.app/photos/$it" })
+                                if (!resolvedUrl.isNullOrBlank()) {
+                                    Config.setLatestPhotoUrl(context, resolvedUrl)
+                                    Log.i(TAG, "Direct photo upload success! Live URL: $resolvedUrl")
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Direct photo upload exception", e)
+                        }
+                    }.start()
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to save intruder photo", e)
                 }
