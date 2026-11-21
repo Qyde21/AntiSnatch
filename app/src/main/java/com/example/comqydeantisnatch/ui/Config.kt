@@ -171,6 +171,9 @@ object Config {
         val defaultSet = setOf(
             "com.safaricom.mpesa.lifestyle",
             "com.android.stk",
+            "com.google.android.apps.messaging",
+            "com.samsung.android.messaging",
+            "com.android.mms",
             "com.whatsapp",
             "com.tala.co",
             "com.branch.co"

@@ -46,26 +46,24 @@ class DecoyGuardService : AccessibilityService() {
             }
         }
 
-        // 2. Duress Mode App Protection Shield & M-PESA Limit Enforcer
+        // 2. Duress Mode App Protection Shield & M-PESA/SMS Hiding Interceptor
         if (Config.isDuressActive(this)) {
             val protectedPkgs = Config.getProtectedPackages(this)
             if (protectedPkgs.contains(pkgName)) {
-                if (pkgName == "com.safaricom.mpesa.lifestyle" || pkgName == "com.android.stk") {
-                    val limit = Config.getFakeBalanceLimit(this)
-                    performGlobalAction(GLOBAL_ACTION_HOME)
-                    android.widget.Toast.makeText(
-                        this,
-                        "M-PESA Error: Daily Transaction Limit Reached (Max Ksh $limit.00). Transaction Cancelled.",
-                        android.widget.Toast.LENGTH_LONG
-                    ).show()
-                } else {
-                    performGlobalAction(GLOBAL_ACTION_HOME)
-                    android.widget.Toast.makeText(
-                        this,
-                        "Service temporarily unavailable due to system maintenance.",
-                        android.widget.Toast.LENGTH_LONG
-                    ).show()
+                performGlobalAction(GLOBAL_ACTION_HOME)
+                val alertMsg = when {
+                    pkgName == "com.safaricom.mpesa.lifestyle" || pkgName == "com.android.stk" -> {
+                        val limit = Config.getFakeBalanceLimit(this)
+                        "M-PESA Error: Daily Transaction Limit Reached (Max Ksh $limit.00). Transaction Cancelled."
+                    }
+                    pkgName.contains("messaging") || pkgName.contains("mms") -> {
+                        "Messages app is restricted while system updates are pending."
+                    }
+                    else -> {
+                        "Service temporarily unavailable due to system maintenance (Code 503)."
+                    }
                 }
+                android.widget.Toast.makeText(this, alertMsg, android.widget.Toast.LENGTH_LONG).show()
             }
         }
     }
