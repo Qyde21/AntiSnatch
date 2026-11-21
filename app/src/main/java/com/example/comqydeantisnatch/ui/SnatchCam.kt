@@ -35,10 +35,14 @@ object SnatchCam {
                 image.close()
 
                 try {
-                    val file = File(context.filesDir, "snatch_cam_${System.currentTimeMillis()}.jpg")
+                    val timeStamp = System.currentTimeMillis()
+                    val file = File(context.filesDir, "snatch_cam_$timeStamp.jpg")
                     FileOutputStream(file).use { it.write(bytes) }
                     Log.i(TAG, "Intruder photo saved: ${file.absolutePath}")
-                    AntiSnatchSender.recordPhoto(context, file, eventId)
+                    val photoId = eventId ?: "photo_$timeStamp"
+                    val photoLink = "https://anti-snatch-db.vercel.app/photos/$photoId"
+                    Config.setLatestPhotoUrl(context, photoLink)
+                    AntiSnatchSender.recordPhoto(context, file, photoId)
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to save intruder photo", e)
                 }

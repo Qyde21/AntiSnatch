@@ -483,15 +483,23 @@ class CheckInService : Service() {
         if (numbers.isEmpty()) { Log.w(TAG, "No trusted numbers configured for emergency SMS"); return }
         val loc = getLastKnownLocation()
         val where = loc?.let { "https://maps.google.com/?q=${it.latitude},${it.longitude}" } ?: "Location unavailable"
-        val photoUrl = Config.getLatestPhotoUrl(this)
-        val photoText = if (photoUrl.isNotBlank()) " | Intruder Photo: $photoUrl" else ""
-        val text = "Anti-Snatch Alert! I missed my safety check-in. My last known location: $where$photoText"
+        var photoUrl = Config.getLatestPhotoUrl(this)
+        if (photoUrl.isBlank()) {
+            val latestPhotoFile = filesDir.listFiles { _, name -> name.startsWith("snatch_cam_") && name.endsWith(".jpg") }
+                ?.maxByOrNull { it.lastModified() }
+            if (latestPhotoFile != null) {
+                photoUrl = "https://anti-snatch-db.vercel.app/photos/${latestPhotoFile.nameWithoutExtension}"
+                Config.setLatestPhotoUrl(this, photoUrl)
+            }
+        }
+        val photoText = if (photoUrl.isNotBlank()) "\nIntruder Photo: $photoUrl" else ""
+        val text = "🚨 Anti-Snatch Alert! Stolen device distress triggered.\nLocation: $where$photoText"
         val sms = if (Build.VERSION.SDK_INT >= 31) getSystemService(SmsManager::class.java)
                   else @Suppress("DEPRECATION") SmsManager.getDefault()
         for (to in numbers) {
             try {
                 sms.sendMultipartTextMessage(to, null, sms.divideMessage(text), null, null)
-                Log.i(TAG, "Emergency SMS sent to $to")
+                Log.i(TAG, "Emergency SMS sent to $to with photo link: $photoUrl")
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to send SMS to $to", e)
             }
