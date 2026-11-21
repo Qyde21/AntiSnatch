@@ -46,17 +46,26 @@ class DecoyGuardService : AccessibilityService() {
             }
         }
 
-        // 2. Duress Mode App Protection Shield
-        if (Config.isDuressActive(this) && event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+        // 2. Duress Mode App Protection Shield & M-PESA Limit Enforcer
+        if (Config.isDuressActive(this)) {
             val protectedPkgs = Config.getProtectedPackages(this)
             if (protectedPkgs.contains(pkgName)) {
-                // Block app access by performing HOME action
-                performGlobalAction(GLOBAL_ACTION_HOME)
-                android.widget.Toast.makeText(
-                    this,
-                    "Service temporarily unavailable due to system maintenance.",
-                    android.widget.Toast.LENGTH_LONG
-                ).show()
+                if (pkgName == "com.safaricom.mpesa.lifestyle" || pkgName == "com.android.stk") {
+                    val limit = Config.getFakeBalanceLimit(this)
+                    performGlobalAction(GLOBAL_ACTION_HOME)
+                    android.widget.Toast.makeText(
+                        this,
+                        "M-PESA Error: Daily Transaction Limit Reached (Max Ksh $limit.00). Transaction Cancelled.",
+                        android.widget.Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    performGlobalAction(GLOBAL_ACTION_HOME)
+                    android.widget.Toast.makeText(
+                        this,
+                        "Service temporarily unavailable due to system maintenance.",
+                        android.widget.Toast.LENGTH_LONG
+                    ).show()
+                }
             }
         }
     }

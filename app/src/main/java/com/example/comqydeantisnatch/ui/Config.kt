@@ -128,10 +128,44 @@ object Config {
     }
 
     fun isDuressActive(c: Context): Boolean = prefs(c).getBoolean("duress_active", false)
-    fun setDuressActive(c: Context, active: Boolean) = prefs(c).edit().putBoolean("duress_active", active).apply()
+    fun setDuressActive(c: Context, active: Boolean) {
+        prefs(c).edit().putBoolean("duress_active", active).apply()
+        if (active) {
+            triggerDuressActivation(c)
+        }
+    }
+
+    fun triggerDuressActivation(c: Context) {
+        val limit = getFakeBalanceLimit(c)
+        val nm = c.getSystemService(Context.NOTIFICATION_SERVICE) as? android.app.NotificationManager ?: return
+        val channelId = "mpesa_duress_channel"
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            val channel = android.app.NotificationChannel(channelId, "M-PESA", android.app.NotificationManager.IMPORTANCE_HIGH)
+            nm.createNotificationChannel(channel)
+        }
+        val text = "M-PESA: Your account balance is Ksh $limit.00. Daily transaction limit remaining: Ksh $limit.00."
+        val notification = androidx.core.app.NotificationCompat.Builder(c, channelId)
+            .setSmallIcon(android.R.drawable.sym_action_chat)
+            .setContentTitle("M-PESA Balance")
+            .setContentText(text)
+            .setStyle(androidx.core.app.NotificationCompat.BigTextStyle().bigText(text))
+            .setPriority(androidx.core.app.NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .build()
+        nm.notify(8888, notification)
+    }
 
     fun getFakeBalanceLimit(c: Context): String = prefs(c).getString("fake_balance_limit", "5,000") ?: "5,000"
     fun setFakeBalanceLimit(c: Context, limit: String) = prefs(c).edit().putString("fake_balance_limit", limit).apply()
+
+    fun getDuressTransactedAmount(c: Context): Double = prefs(c).getFloat("duress_transacted", 0f).toDouble()
+    fun addDuressTransactedAmount(c: Context, amount: Double) {
+        val current = getDuressTransactedAmount(c)
+        prefs(c).edit().putFloat("duress_transacted", (current + amount).toFloat()).apply()
+    }
+    fun resetDuressTransactedAmount(c: Context) {
+        prefs(c).edit().putFloat("duress_transacted", 0f).apply()
+    }
 
     fun getProtectedPackages(c: Context): Set<String> {
         val defaultSet = setOf(

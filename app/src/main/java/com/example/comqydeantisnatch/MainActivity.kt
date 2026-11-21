@@ -506,6 +506,17 @@ fun AntiSnatchMainScreen() {
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Button(
+                        onClick = {
+                            Config.triggerDuressActivation(context)
+                            Toast.makeText(context, "M-PESA Duress notification triggered! (Capped to Ksh $fakeBalanceLimit)", Toast.LENGTH_SHORT).show()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFB74D))
+                    ) {
+                        Text("📲 Test Spoofed M-PESA Notification", color = Color.Black)
+                    }
                 }
             }
 
