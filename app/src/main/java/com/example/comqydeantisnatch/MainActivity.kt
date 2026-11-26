@@ -15,6 +15,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -911,6 +912,90 @@ fun IntruderPhotosCard() {
             } catch (_: Exception) { emptyList() }
         )
     }
+    var selectedPhotoFile by remember { mutableStateOf<File?>(null) }
+
+    selectedPhotoFile?.let { photoFile ->
+        val fullBitmap = remember(photoFile) {
+            try { BitmapFactory.decodeFile(photoFile.absolutePath) } catch (_: Exception) { null }
+        }
+        if (fullBitmap != null) {
+            androidx.compose.ui.window.Dialog(onDismissRequest = { selectedPhotoFile = null }) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "📸 Intruder Photo Detail",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.getDefault()).format(photoFile.lastModified()),
+                            color = Color.Gray,
+                            fontSize = 12.sp
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Image(
+                            bitmap = fullBitmap.asImageBitmap(),
+                            contentDescription = "Full Intruder Photo",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(320.dp)
+                                .background(Color.Black, shape = RoundedCornerShape(12.dp)),
+                            contentScale = ContentScale.Fit
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Button(
+                                onClick = {
+                                    try {
+                                        val uri = androidx.core.content.FileProvider.getUriForFile(
+                                            context,
+                                            "${context.packageName}.fileprovider",
+                                            photoFile
+                                        )
+                                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                            type = "image/jpeg"
+                                            putExtra(Intent.EXTRA_STREAM, uri)
+                                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                        }
+                                        context.startActivity(Intent.createChooser(shareIntent, "Share Intruder Photo"))
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Share failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676))
+                            ) {
+                                Text("Share Photo", color = Color.Black, fontWeight = FontWeight.Bold)
+                            }
+
+                            Button(
+                                onClick = { selectedPhotoFile = null },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
+                            ) {
+                                Text("Close", color = Color.White)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     if (photoFiles.isNotEmpty()) {
         Card(
@@ -952,7 +1037,8 @@ fun IntruderPhotosCard() {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 4.dp),
+                                .padding(vertical = 4.dp)
+                                .clickable { selectedPhotoFile = file },
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Image(
@@ -972,8 +1058,8 @@ fun IntruderPhotosCard() {
                                     fontWeight = FontWeight.Medium
                                 )
                                 Text(
-                                    text = "${file.length() / 1024} KB",
-                                    color = Color.Gray,
+                                    text = "${file.length() / 1024} KB (Tap to view)",
+                                    color = Color(0xFF00E676),
                                     fontSize = 12.sp
                                 )
                             }
