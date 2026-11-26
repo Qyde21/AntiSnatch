@@ -1,6 +1,6 @@
 {
-  "versionCode": 2,
-  "versionName": "2.0",
+  "versionCode": 3,
+  "versionName": "3.0",
   "apkUrl": "https://raw.githubusercontent.com/Qyde21/AntiSnatch/master/app-debug.apk",
-  "releaseNotes": "Version 2.0: Enhanced anti-snatch security guard, OTA auto-updates, and intruder capture improvements."
+  "releaseNotes": "Version 3.0: Added Crowded Place Mode with loud 'Mwiizi!' voice alarm, Duress Protection Shield (M-PESA transaction limit enforcer & SMS hiding), Lipa Mdogo Mdogo Anti-Flash / Anti-Reset policy, and instant intruder photo gallery."
 }
