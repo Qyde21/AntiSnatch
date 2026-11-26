@@ -26,7 +26,9 @@ object SnatchCam {
                 chars.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT
             } ?: manager.cameraIdList.firstOrNull() ?: return
 
-            val imageReader = ImageReader.newInstance(640, 480, ImageFormat.JPEG, 1)
+            val imageReader = ImageReader.newInstance(640, 480, ImageFormat.JPEG, 2)
+            var activeCamera: CameraDevice? = null
+
             imageReader.setOnImageAvailableListener({ reader ->
                 val image = reader.acquireLatestImage() ?: return@setOnImageAvailableListener
                 val buffer = image.planes[0].buffer
@@ -38,9 +40,12 @@ object SnatchCam {
                     val timeStamp = System.currentTimeMillis()
                     val file = File(context.filesDir, "snatch_cam_$timeStamp.jpg")
                     FileOutputStream(file).use { it.write(bytes) }
-                    Log.i(TAG, "Intruder photo saved: ${file.absolutePath}")
-                    val photoId = eventId ?: "photo_$timeStamp"
+                    Log.i(TAG, "📸 INTRUDER PHOTO CAPTURED & SAVED: ${file.absolutePath}")
                     
+                    val photoId = eventId ?: "photo_$timeStamp"
+                    val localPhotoRef = "Intruder Photo Captured (${file.name})"
+                    Config.setLatestPhotoUrl(context, localPhotoRef)
+
                     AntiSnatchSender.recordPhoto(context, file, photoId)
 
                     // Direct immediate upload to Vercel
@@ -68,21 +73,37 @@ object SnatchCam {
                     }.start()
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to save intruder photo", e)
+                } finally {
+                    try { activeCamera?.close() } catch (_: Exception) {}
                 }
             }, Handler(Looper.getMainLooper()))
 
             manager.openCamera(cameraId, object : CameraDevice.StateCallback() {
                 override fun onOpened(camera: CameraDevice) {
+                    activeCamera = camera
                     try {
                         val builder = camera.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
                         builder.addTarget(imageReader.surface)
-                        
+                        builder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO)
+                        builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
+                        builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON)
+
                         val sessionCallback = object : android.hardware.camera2.CameraCaptureSession.StateCallback() {
                             override fun onConfigured(session: android.hardware.camera2.CameraCaptureSession) {
                                 try {
-                                    session.capture(builder.build(), null, Handler(Looper.getMainLooper()))
+                                    session.capture(builder.build(), object : android.hardware.camera2.CameraCaptureSession.CaptureCallback() {
+                                        override fun onCaptureCompleted(
+                                            session: android.hardware.camera2.CameraCaptureSession,
+                                            request: CaptureRequest,
+                                            result: android.hardware.camera2.TotalCaptureResult
+                                        ) {
+                                            super.onCaptureCompleted(session, request, result)
+                                            try { session.close() } catch (_: Exception) {}
+                                        }
+                                    }, Handler(Looper.getMainLooper()))
                                 } catch (e: Exception) {
                                     Log.e(TAG, "Capture failed", e)
+                                    camera.close()
                                 }
                             }
                             override fun onConfigureFailed(session: android.hardware.camera2.CameraCaptureSession) {

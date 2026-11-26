@@ -229,6 +229,7 @@ class CheckInService : Service() {
     private fun startEmergencyLoop() {
         if (emergencyJob?.isActive == true) return
         emergencyJob = scope.launch {
+            delay(1500L) // Wait 1.5s for SnatchCam front camera capture to finish writing JPEG file to disk
             while (isActive) {
                 sendEmergencySmsWithLocation()   // keeps retrying, so it goes out once a SIM is back
                 delay(Config.EMERGENCY_INTERVAL_MS)
